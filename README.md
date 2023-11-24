@@ -42,5 +42,6 @@
   `curl -XPOST -H "Content-type: application/json" -d '{ body: "notification text" }' 'localhost:8001/api/customer/test_code/notifications'`
 * Functional tests: `php ./vendor/bin/phpunit tests/Functional` 
 
-### Run Unit tests:
-* `php ./vendor/bin/phpunit tests/Unit` 
+### Run written tests:
+* Unit : `php ./vendor/bin/phpunit tests/Unit`
+* Funtional : `php ./vendor/bin/phpunit tests/Functional` 
