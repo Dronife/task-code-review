@@ -3,9 +3,7 @@
 namespace App\Controller\Api;
 
 use App\Requests\CustomerController\NotificationRequest;
-use App\Service\Customer\CustomerProviderService;
-use App\Service\Message\MessageProviderService;
-use App\Service\Messenger\MessengerModifierService;
+use App\Service\Notification\NotificationOrchestratorService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -15,19 +13,11 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class CustomerController extends AbstractController
 {
-    private CustomerProviderService $customerProviderService;
-    private MessageProviderService $messageProviderService;
-    private MessengerModifierService $messengerModifierService;
+    private NotificationOrchestratorService $notificationModifierService;
 
-    public function __construct(
-        CustomerProviderService  $customerProviderService,
-        MessageProviderService   $messageProviderService,
-        MessengerModifierService $messengerModifierService
-    )
+    public function __construct(NotificationOrchestratorService $notificationModifierService)
     {
-        $this->customerProviderService = $customerProviderService;
-        $this->messageProviderService = $messageProviderService;
-        $this->messengerModifierService = $messengerModifierService;
+        $this->notificationModifierService = $notificationModifierService;
     }
 
     /**
@@ -38,16 +28,12 @@ class CustomerController extends AbstractController
     public function notifyCustomer(NotificationRequest $request, string $code): Response
     {
         $request->validate();
-        $data = $request->getRequestAsArray();
-
         try {
-            $customer = $this->customerProviderService->getOneCustomerByCode($code);
-            $message = $this->messageProviderService->getModel($data, $customer);
-            $this->messengerModifierService->send($message);
+            $this->notificationModifierService->send($request->getRequestAsArray(), $code);
+
+            return $this->json('Message was sent successfully')->setStatusCode(Response::HTTP_OK);
         } catch (\Exception $e) {
             return $this->json($e->getMessage())->setStatusCode(Response::HTTP_BAD_REQUEST);
         }
-
-        return $this->json('Message was sent successfully')->setStatusCode(Response::HTTP_OK);
     }
 }

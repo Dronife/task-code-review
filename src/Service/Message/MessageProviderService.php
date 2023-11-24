@@ -3,7 +3,6 @@
 namespace App\Service\Message;
 
 use App\Domain\Message\Hydrator;
-use App\Entity\Customer;
 use App\Model\Message;
 
 class MessageProviderService
@@ -22,8 +21,8 @@ class MessageProviderService
      *
      * @throws \InvalidArgumentException
      */
-    public function getModel(array $data, Customer $customer): Message
+    public function hydrateFromArrayToModel(array $data): Message
     {
-        return $this->hydrator->hydrateToModel($data, $customer);
+        return $this->hydrator->hydrateFromArrayToModel($data);
     }
 }

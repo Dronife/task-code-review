@@ -26,6 +26,4 @@ class CustomerProviderService
 
         return $customer;
     }
-
-
 }
