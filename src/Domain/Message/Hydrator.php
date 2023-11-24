@@ -2,7 +2,6 @@
 
 namespace App\Domain\Message;
 
-use App\Entity\Customer;
 use App\Model\Message;
 
 class Hydrator
@@ -14,14 +13,10 @@ class Hydrator
      *
      * @throws \InvalidArgumentException
      */
-    public function hydrateToModel(array $data, Customer $customer): Message
-    {
-        if (!array_key_exists('body', $data)) {
+    public function hydrateFromArrayToModel(array $data): Message {
+        if (!isset($data['body'])) {
             throw new \InvalidArgumentException('The body key is missing in the data array.');
         }
-
-        return (new Message())
-            ->setType($customer->getNotificationType())
-            ->setBody($data['body']);
+        return (new Message())->setBody($data['body']);
     }
 }
