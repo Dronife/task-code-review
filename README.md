@@ -1,3 +1,15 @@
+# Code review
+
+## Task
+ * Create REST api create customer notifications by email or sms depends on customer settings.
+ * Customer profile data is saved in Database
+
+ Request:
+     /api/customer/{code}/notifications
+    {
+        body: "notification text"
+    }
+
 # How to run application
 
 ### WEIRD PORTS: To avoid potential conflicts with existing ports
@@ -19,99 +31,17 @@
    * `cp .env.example .env`
    * `composer install`
    * `php bin/console doctrine:migrations:migrate`
-   * run jobs in background `php bin/console messenger:consume async -vv`
 
-# Endpoint Testing
-
-This section details the available API endpoints and how to use them:<br>
-1. **Create simple User (POST)**
-    - Endpoint: `/api/user `
-    - Request Body Format:
-      ```json
-      {
-        "email" : "testemail@gmail.com",
-        "phoneNumber" : "+3706606616"
-      }
-      ```
-    - Return:
-      ```json
-      {
-         "id":"1"
-      }
-      ```
-2. **Send notification (POST)**
-    - Endpoint: `/api/notification `
-    - Request Body Format:
-      ```json
-      {
-        "message": "hello all",
-        "subject": "Greetings",
-        "recipient": 1,
-        "type": "email"
-      }
-      ```
-    - Return:
-      ```json
-      {
-         "id":"1"
-      }
-      ``` 
-# Implement providers
-We have these implemented providers
-```php 
-class AWSEmailProvider implements ProviderInterface, EmailProviderInterface{}
-
-class MailTrapEmailProvider implements ProviderInterface, EmailProviderInterface{}
- ```
-
-### IMPORTANT:
-#### If you want to add new provider you just simply make them inherit `ProviderInterface` and also `EmailProviderInterface` or `SmsProviderInterface`.<br>
-#### If you want to "turn off" one of concrete providers simply remove specific provider interface(currently `EmailProviderInterface` or `SmsProviderInterface`)<br>
-<hr>
-* Currently there are only EmailProviderInterface and SmsProviderInterface
-* If you want new providers you just simply add new <your_new_provider_type>ProviderInterface
-* If you want to hook up new provider type you need to add it in `services.yaml` and `NotificationProviderFactory` file<br>
- 
-  ```yaml
-      _instanceof:
-        App\Infrastructure\Notification\Provider\SmsProviders\SmsProviderInterface:
-            tags: ['app.sms_providers']
-
-        App\Infrastructure\Notification\Provider\EmailProviders\EmailProviderInterface:
-            tags: ['app.email_providers']
-
-        #Adding new Provider Instance:
-        #App\Infrastructure\Notification\Provider\<your_new_provider_type>Providers\<your_new_provider_type>ProviderInterface
-        #    tags: ['app.<your_new_provider_type>_providers']
-
-    App\Infrastructure\Notification\Provider\Factory\NotificationProviderFactory:
-        arguments:
-            $smsProviders: !tagged_iterator app.sms_providers
-            $emailProviders: !tagged_iterator app.email_providers
-        #   $<your_new_provider_type>Providers: !tagged_iterator app.<your_new_provider_type>_providers
-  ```
-
-```php
-class NotificationProviderFactory
-{
-
-    public function __construct(
-        private readonly iterable $smsProviders,
-        private readonly iterable $emailProviders,
-        //private readonly iterable $<your_new_provider_type>Providers,
-    ) {
-    }
-
-    public function getProvider(string $type): ?ProviderInterface
-    {
-        return match ($type) {
-            NotificationType::EMAIL->value => $this->getAvailableProvider($this->emailProviders),
-            NotificationType::SMS->value => $this->getAvailableProvider($this->smsProviders),
-            <your_new_provider_type> => $this->getAvailableProvider($this-><your_new_provider_type>Providers)
-            default => throw new \InvalidArgumentException("Unsupported notification type: $type"),
-        };
-    }
- ```
+### Endpoint testing:
+* params:
+  * code - `test_code`
+  * Request body -  `{ body: "notification text" }`
+<br></br>  
+* POSTMAN application 
+* curl:
+  `curl -XPOST -H "Content-type: application/json" -d '{ body: "notification text" }' 'localhost:8001/api/customer/test_code/notifications'`
+* Functional tests: `php ./vendor/bin/phpunit tests/Functional` 
 
 ### Run written tests:
 * Unit : `php ./vendor/bin/phpunit tests/Unit`
+* Funtional : `php ./vendor/bin/phpunit tests/Functional` 
